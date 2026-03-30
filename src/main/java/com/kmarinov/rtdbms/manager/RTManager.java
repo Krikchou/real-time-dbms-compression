@@ -1,0 +1,268 @@
+package com.kmarinov.rtdbms.manager;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.kmarinov.rtdbms.api.Filter;
+import com.kmarinov.rtdbms.model.ByteStaticRecord;
+import com.kmarinov.rtdbms.model.CompressionTypeEnum;
+import com.kmarinov.rtdbms.model.DataType;
+import com.kmarinov.rtdbms.model.DatabaseDefinition;
+
+public class RTManager implements Closeable {
+	public static final String DAF_COM_N = "/datafile";
+	public static final String DEF_COM_N = "/definition";
+	public static final String LOG_COM_N = "/log";
+	public static final String STF_COM_N = "/stat";
+	public static final String CMP_COM_N = "/def_datafile";
+	
+	
+	private static RandomAccessFile DATA_FILE;
+	private static RandomAccessFile D_DATA_FILE;
+	private static RandomAccessFile DEF_FILE;
+	private static RandomAccessFile LOG_FILE;
+	private static RandomAccessFile STAT_FILE;
+	private final Compressor compressor;
+	private DatabaseDefinition def;
+	private int data_lines;
+	private int data_cursor;
+	private int compare_data_cursor;
+	private ByteStaticRecord uncompressedLast;
+	private List<Filter> filterChain = new ArrayList<>();
+	private Map<String, Object> stats = new HashMap<>();
+	private byte[] uncompressedLastBytes = new byte[0];
+	private boolean isNotEmptyFile = false;
+	
+	
+	private RTManager(String rootDir, Compressor compressor) throws IOException {
+		this.compressor = compressor;
+		//step load files:
+		DATA_FILE = new RandomAccessFile(rootDir + DAF_COM_N, "rw");
+		D_DATA_FILE = new RandomAccessFile(rootDir + CMP_COM_N, "rw");
+		DEF_FILE = new RandomAccessFile(rootDir + DEF_COM_N, "rw");
+		LOG_FILE = new RandomAccessFile(rootDir + LOG_COM_N, "rw");
+		STAT_FILE = new RandomAccessFile(rootDir + STF_COM_N, "rw");
+		
+		//step read definition:
+		readDefinitionFile();
+		//step read stat file
+		readStatFile();
+	}
+	
+	
+	public static RTManager getInstance(String rootDir, Compressor compressor) throws IOException {
+		return new RTManager(rootDir, compressor);
+	}
+	
+	private void readDefinitionFile() throws IOException {
+		int cursor = 0;
+		byte[] buff = new byte[3*Integer.BYTES];
+		DEF_FILE.seek(cursor);
+		DEF_FILE.read(buff);
+		
+		int columnSegmentSize = ByteBuffer.wrap(buff, 0, 4).getInt();
+		System.out.println(columnSegmentSize);
+		int datatypeSegmentSize = ByteBuffer.wrap(buff, 4, 4).getInt();
+		System.out.println(datatypeSegmentSize);
+		int compressionSegmentSize = ByteBuffer.wrap(buff, 8, 4).getInt();
+		System.out.println(compressionSegmentSize);
+		
+		cursor += 3*Integer.BYTES;
+		
+		buff = new byte[3*Character.BYTES*columnSegmentSize];
+		
+		DEF_FILE.seek(cursor);
+		DEF_FILE.read(buff);
+		
+		String[] col_names = new String[columnSegmentSize];
+		
+		for (int i = 0; i<columnSegmentSize; i++) {
+			col_names[i] = String.valueOf(new char[] {
+					ByteBuffer.wrap(buff, i * Character.BYTES * 3 , Character.BYTES).getChar(),
+					ByteBuffer.wrap(buff, i * Character.BYTES * 3 + Character.BYTES , Character.BYTES).getChar(), 
+					ByteBuffer.wrap(buff, i * Character.BYTES * 3 + 2* Character.BYTES, Character.BYTES).getChar()});
+		}
+		
+		cursor+=3*Character.BYTES*columnSegmentSize;
+		
+		buff = new byte[Short.BYTES*datatypeSegmentSize];
+		
+		DataType[] datatypes = new DataType[datatypeSegmentSize];
+		
+		DEF_FILE.seek(cursor);
+		DEF_FILE.read(buff);
+		
+		for (int i = 0; i<datatypeSegmentSize; i++) {
+			datatypes[i] = DataType.valueOf(ByteBuffer.wrap(buff, i * Short.BYTES, Short.BYTES).getShort());
+		}
+		
+		cursor+=Short.BYTES*datatypeSegmentSize;
+		
+		buff = new byte[Short.BYTES*compressionSegmentSize];
+		
+		CompressionTypeEnum[] compression = new CompressionTypeEnum[compressionSegmentSize];
+		
+		DEF_FILE.seek(cursor);
+		DEF_FILE.read(buff);
+		
+		for (int i = 0; i<compressionSegmentSize; i++) {
+			compression[i] = CompressionTypeEnum.valueOf(ByteBuffer.wrap(buff, i * Short.BYTES, Short.BYTES).getShort());
+		}
+		
+		def = new DatabaseDefinition();
+		def.setColumns(col_names);
+		def.setDatatypes(datatypes);
+		def.setCompressionStrategies(compression);
+		def.setSizes(new int[]{columnSegmentSize, datatypeSegmentSize, compressionSegmentSize});
+	}
+	
+	private void readStatFile() throws IOException {
+	    int cursor = 0;
+	    STAT_FILE.seek(cursor);
+	    byte[] buff = new byte[2*Integer.BYTES + 1];
+		STAT_FILE.read(buff);
+		data_lines = ByteBuffer.wrap(buff, 0, 4).getInt();
+		data_cursor = ByteBuffer.wrap(buff, 4, 4).getInt();
+		isNotEmptyFile = ByteBuffer.wrap(buff, 8, 1).get() == (byte) 1;
+	}
+	
+	public int addCol(String name, DataType type, CompressionTypeEnum ctype) throws IOException {
+		int cursor = 0;
+		DEF_FILE.seek(cursor);
+		
+		DEF_FILE.writeInt(def.getSizes()[0] + 1);
+		cursor += Integer.BYTES;
+		DEF_FILE.seek(cursor);
+		DEF_FILE.writeInt(def.getSizes()[1] + 1);
+		cursor += Integer.BYTES;
+		DEF_FILE.seek(cursor);
+		DEF_FILE.writeInt(def.getSizes()[2] + 1);
+		
+		def.setSizes(new int[] {def.getSizes()[0] + 1, def.getSizes()[1] + 1, def.getSizes()[2] + 1,});
+		
+		cursor += Integer.BYTES;
+		DEF_FILE.seek(cursor);
+		
+		for (String cn : def.getColumns()) {
+			DEF_FILE.writeChars(cn);
+			cursor += 3*Character.BYTES;
+			DEF_FILE.seek(cursor);
+		}
+		
+		DEF_FILE.writeChars(name.substring(0, 3));
+		
+		String[] newC = Arrays.copyOf(def.getColumns(), def.getColumns().length + 1);
+		newC[def.getColumns().length] = name.substring(0, 3);
+		
+		def.setColumns(newC);
+		
+		cursor += 3*Character.BYTES;
+		DEF_FILE.seek(cursor);
+		
+		for (DataType cn : def.getDatatypes()) {
+			DEF_FILE.writeShort(cn.type);
+			cursor += Short.BYTES;
+			DEF_FILE.seek(cursor);
+		}
+		
+		DEF_FILE.writeShort(type.type);
+		
+		DataType[] newD = Arrays.copyOf(def.getDatatypes(), def.getDatatypes().length + 1);
+		newD[def.getDatatypes().length] = type;
+		
+		def.setDatatypes(newD);
+		
+		cursor += Short.BYTES;
+		DEF_FILE.seek(cursor);
+		
+		for (CompressionTypeEnum cn : def.getCompressionStrategies()) {
+			DEF_FILE.writeShort(cn.type);
+			cursor += Short.BYTES;
+			DEF_FILE.seek(cursor);
+		}
+		
+		DEF_FILE.writeShort(ctype.type);
+		
+		CompressionTypeEnum[] newCT = Arrays.copyOf(def.getCompressionStrategies(), def.getCompressionStrategies().length + 1);
+		newCT[def.getCompressionStrategies().length] = ctype;
+		
+		def.setCompressionStrategies(newCT);
+		
+		return 0;
+	}
+	
+	public void store(ByteStaticRecord r) throws IOException {
+		r.add("CLK", data_lines + 1);
+		byte[] compressed = compressor.doCompress(r, def);
+		D_DATA_FILE.seek(compare_data_cursor);
+		D_DATA_FILE.write(compressed);
+		compare_data_cursor += compressed.length;
+		if (uncompressedLastBytes.length != 0) {
+			
+			for (Filter f : filterChain) {
+			   f.doFilter(r, uncompressedLast, stats, data_lines);	
+			}
+			
+			byte[] merged = compressor.merge(compressed, uncompressedLastBytes);
+			uncompressedLastBytes = compressed;
+			uncompressedLast = r;
+			compressed = merged;
+		} else {
+			uncompressedLastBytes = compressed;
+			uncompressedLast = r;
+		}
+		
+		DATA_FILE.seek(data_cursor);
+		DATA_FILE.write(compressed);
+		data_cursor += compressed.length;
+		data_lines += 1;
+		STAT_FILE.seek(0);
+		STAT_FILE.writeInt(data_lines);
+		STAT_FILE.seek(Integer.BYTES);
+		STAT_FILE.writeInt(data_cursor);
+		
+		System.out.println(stats);
+	}
+
+
+	@Override
+	public void close() throws IOException {
+		STAT_FILE.seek(2 * Integer.BYTES);
+		STAT_FILE.writeBoolean(true);
+		
+		int curr = 0;
+		for (Entry<String, Object> e : stats.entrySet()) {
+			LOG_FILE.seek(curr);
+			LOG_FILE.writeInt(e.getKey().length() * Character.BYTES);
+			curr += Integer.BYTES;
+			LOG_FILE.seek(curr);
+			LOG_FILE.writeChars(e.getKey());
+			curr += e.getKey().length() * Character.BYTES;
+			LOG_FILE.seek(curr);
+			LOG_FILE.writeFloat((float) e.getValue());
+			curr += Float.BYTES;
+		}
+		System.out.println("New struct file size:" + DATA_FILE.length());
+		System.out.println("Old struct file size:" + D_DATA_FILE.length());
+	}
+
+
+	public boolean isNotEmptyFile() {
+		return isNotEmptyFile;
+	}
+	
+	public void addFilter(Filter f) {
+		filterChain.add(f);
+	}
+	
+	
+
+}
