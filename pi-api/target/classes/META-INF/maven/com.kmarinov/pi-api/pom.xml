@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.kmarinov</groupId>
+    <artifactId>rtdbms-super-compressed</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>pi-api</artifactId>
+  <dependencies>
+  
+    <!-- Include Pi4J Core -->
+    <dependency>
+        <groupId>com.pi4j</groupId>
+        <artifactId>pi4j-core</artifactId>
+        <version>${pi4j.version}</version>
+    </dependency>
+
+    <!-- Include Pi4J Plugin (Platforms and I/O Providers) -->
+    <dependency>
+        <groupId>com.pi4j</groupId>
+        <artifactId>pi4j-plugin-raspberrypi</artifactId>
+        <version>${pi4j.version}</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>com.kmarinov</groupId>
+        <artifactId>core</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+</project>

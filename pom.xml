@@ -6,11 +6,26 @@
 	<artifactId>rtdbms-super-compressed</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>RTDBMSSC</name>
+	<packaging>pom</packaging>
 	<description>Real time database system with hyper compression</description>
 	<properties>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
+		<slf4j.version>2.0.16</slf4j.version>
+        <pi4j.version>3.0.3</pi4j.version>
 	</properties>
+	<dependencies>
+	    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+    </dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -20,4 +35,8 @@
 			</plugin>
 		</plugins>
 	</build>
+	<modules>
+		<module>pi-api</module>
+		<module>core</module>
+	</modules>
 </project>
