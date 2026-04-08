@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public class RTManager implements Closeable {
 	private int compare_data_cursor;
 	private ByteStaticRecord uncompressedLast;
 	private List<Filter> filterChain = new ArrayList<>();
-	private Map<String, Object> stats = new HashMap<>();
+	private Map<String, Object> stats = new ConcurrentHashMap<>();
 	private byte[] uncompressedLastBytes = new byte[0];
 	private boolean isNotEmptyFile = false;
 	
