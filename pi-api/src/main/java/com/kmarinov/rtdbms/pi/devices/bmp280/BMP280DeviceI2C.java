@@ -3,6 +3,7 @@ package com.kmarinov.rtdbms.pi.devices.bmp280;
 import com.pi4j.context.Context;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
+import com.pi4j.io.i2c.I2CProvider;
 import com.pi4j.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ public class BMP280DeviceI2C extends BMP280Device {
    protected I2C i2c = null;
 
    protected I2CConfig config = null;
+   
+   protected I2CProvider provider = null;
    // I2C Provider name and unique ID
    /**
     * Constant <code>I2C_PROVIDER_NAME="NAME +  I2C Provider"</code>
@@ -26,12 +29,13 @@ public class BMP280DeviceI2C extends BMP280Device {
    public static final String I2C_PROVIDER_ID = ID + "-i2c";
 
 
-   public BMP280DeviceI2C(Context pi4j, Console console, int bus, int address, String traceLevel) {
+   public BMP280DeviceI2C(Context pi4j, Console console, I2CProvider provider, int bus, int address, String traceLevel) {
        super(pi4j, console, traceLevel);
        this.pi4j = pi4j;
        this.address = address;
        this.busNum = bus;
        this.console = console;
+       this.provider = provider;
        // "trace", "debug", "info", "warn", "error" or "off"). If not specified, defaults to "info"
        //  must fully qualify logger as others exist and the slf4 code will use the first it
        //  encounters if using the defaultLogLevel
@@ -47,11 +51,12 @@ public class BMP280DeviceI2C extends BMP280Device {
     * @param address Device address
     * @param logger  Instantiated Logger
     */
-   public BMP280DeviceI2C(Context pi4j, Console console, int bus, int address, Logger logger) {
+   public BMP280DeviceI2C(Context pi4j, Console console, I2CProvider provider, int bus, int address, Logger logger) {
        super(pi4j, console, "info");
        this.address = address;
        this.busNum = bus;
        this.logger = logger;
+       this.provider = provider;
        this.createI2cDevice(); // will set start this.i2c
    }
 
@@ -95,7 +100,7 @@ public class BMP280DeviceI2C extends BMP280Device {
            .name(name)
            .build();
        this.config = i2cDeviceConfig;
-       this.i2c = this.pi4j.create(i2cDeviceConfig);
+       this.i2c = this.provider.create(i2cDeviceConfig);
        this.logger.info("Exit:createI2cDevice  ");
    }
 

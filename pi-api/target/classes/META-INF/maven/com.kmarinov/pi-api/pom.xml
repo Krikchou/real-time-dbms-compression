@@ -25,6 +25,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-plugin-linuxfs</artifactId>
+			<version>${pi4j.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.kmarinov</groupId>
 			<artifactId>core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>

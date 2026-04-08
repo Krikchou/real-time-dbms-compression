@@ -15,6 +15,7 @@ import com.kmarinov.rtdbms.pi.devices.bmp280.BMP280Device;
 import com.kmarinov.rtdbms.pi.devices.bmp280.BMP280DeviceI2C;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
+import com.pi4j.io.i2c.I2CProvider;
 import com.pi4j.util.Console;
 
 public class Application {
@@ -43,11 +44,11 @@ public class Application {
 		}
 		
 		final Context ctx = Pi4J.newAutoContext();
+		final I2CProvider p = ctx.provider("linuxfs-i2c");
 		final Console console = new Console();
 		
-		BMP280DeviceI2C sensor = new BMP280DeviceI2C(ctx, console, 1, 0x77, log);
-		
-        sensor.resetSensor();
+		BMP280DeviceI2C sensor = new BMP280DeviceI2C(ctx, console,p, 1, 0x76, log);
+        //sensor.resetSensor();
         sensor.initSensor();
         console.println("  Dev I2C detail    " + sensor.i2cDetail());
         console.println("  Setup ----------------------------------------------------------");

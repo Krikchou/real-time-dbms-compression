@@ -297,7 +297,7 @@ public abstract class BMP280Device implements BMP280Interface {
      */
     public void initSensor() {
         this.logger.trace("enter: initSensor");
-        this.resetSensor();
+        //this.resetSensor();
         // read 0xD0 validate data equal 0x58 or 0x60
         int id = this.readRegister(BMP280Declares.chipId);
         this.logger.info("Chip ID : " + id);
