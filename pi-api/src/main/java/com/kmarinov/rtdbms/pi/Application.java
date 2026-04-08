@@ -22,7 +22,7 @@ public class Application {
 	//private static GPIOManager gpio_manager;
 	private static RTManager rt_manager;
 	
-	private static final String root_dir = "./target/files";
+	private static final String root_dir = "/home/krasi/Dev/dbfiles";
 	
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
 	
