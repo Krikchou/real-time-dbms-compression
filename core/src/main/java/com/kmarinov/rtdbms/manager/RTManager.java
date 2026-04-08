@@ -207,17 +207,15 @@ public class RTManager implements Closeable {
 	public void store(ByteStaticRecord r) throws IOException {
 		long start = System.nanoTime();
 		r.add("CLK", data_lines + 1);
+		for (Filter f : filterChain) {
+			f.doFilter(r, uncompressedLast, stats, data_lines);	
+		}
 		byte[] compressed = compressor.doCompress(r, def);
 		D_DATA_FILE.seek(compare_data_cursor);
 		D_DATA_FILE.write(compressed);
 		LOG.info("Write Uncompressed Took : {0}ns", System.nanoTime() - start);
 		compare_data_cursor += compressed.length;
 		if (uncompressedLastBytes.length != 0) {
-			
-			for (Filter f : filterChain) {
-			   f.doFilter(r, uncompressedLast, stats, data_lines);	
-			}
-			
 			byte[] merged = compressor.merge(compressed, uncompressedLastBytes);
 			uncompressedLastBytes = compressed;
 			uncompressedLast = r;
