@@ -300,6 +300,7 @@ public abstract class BMP280Device implements BMP280Interface {
         this.resetSensor();
         // read 0xD0 validate data equal 0x58 or 0x60
         int id = this.readRegister(BMP280Declares.chipId);
+        this.logger.info("Chip ID : " + id);
         if ((id == 0x55) || (id == BMP280Declares.idValueMskBMP) || (id == BMP280Declares.idValueMskBME)) {
             this.logger.trace("Correct chip ID read");
         } else {
