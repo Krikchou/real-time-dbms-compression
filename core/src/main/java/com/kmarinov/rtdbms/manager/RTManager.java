@@ -214,7 +214,7 @@ public class RTManager implements Closeable {
 		byte[] compressed = compressor.doCompress(r, def);
 		D_DATA_FILE.seek(compare_data_cursor);
 		D_DATA_FILE.write(compressed);
-		LOG.info("Write Uncompressed Took : {0}ns", System.nanoTime() - start);
+		LOG.info("Write Uncompressed Took : {}ns", System.nanoTime() - start);
 		compare_data_cursor += compressed.length;
 		if (uncompressedLastBytes.length != 0) {
 			byte[] merged = compressor.merge(compressed, uncompressedLastBytes);
@@ -234,7 +234,7 @@ public class RTManager implements Closeable {
 		STAT_FILE.writeInt(data_lines);
 		STAT_FILE.seek(Integer.BYTES);
 		STAT_FILE.writeInt(data_cursor);
-		LOG.info("Write Compressed Took : {0}ns", System.nanoTime() - start);
+		LOG.info("Write Compressed Took : {}ns", System.nanoTime() - start);
 		
 	}
 
