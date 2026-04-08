@@ -28,10 +28,19 @@ public class Application {
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
+		log.info("  _______ _                   _____           _             _____  ____  __  __  _____ \r\n"
+				+ " |__   __(_)                 / ____|         (_)           |  __ \\|  _ \\|  \\/  |/ ____|\r\n"
+				+ "    | |   _ _ __ ___   ___  | (___   ___ _ __ _  ___  ___  | |  | | |_) | \\  / | (___  \r\n"
+				+ "    | |  | | '_ ` _ \\ / _ \\  \\___ \\ / _ \\ '__| |/ _ \\/ __| | |  | |  _ <| |\\/| |\\___ \\ \r\n"
+				+ "    | |  | | | | | | |  __/  ____) |  __/ |  | |  __/\\__ \\ | |__| | |_) | |  | |____) |\r\n"
+				+ "    |_|  |_|_| |_| |_|\\___| |_____/ \\___|_|  |_|\\___||___/ |_____/|____/|_|  |_|_____/ \r\n"
+				+ "                                                                                       \r\n"
+				+ "                                                                                       ");
 		rt_manager = RTManager.getInstance(root_dir, new Compressor());
 		rt_manager.addFilter(new AverageFilter());
 		rt_manager.addFilter(new MovingWindowAverage());
 		if(rt_manager.isNotEmptyFile()) {
+			log.info("Init Database structure");
 			rt_manager.addCol("CLK", DataType.NUM, CompressionTypeEnum.NONE);
 			rt_manager.addCol("TMP", DataType.FPN, CompressionTypeEnum.DIFF);
 			rt_manager.addCol("PRS", DataType.FPN, CompressionTypeEnum.DIFF);
@@ -43,6 +52,7 @@ public class Application {
 			rt_manager.addCol("APR", DataType.FPN, CompressionTypeEnum.DIFF);
 		}
 		
+		log.info("Init sensors");
 		final Context ctx = Pi4J.newAutoContext();
 		final I2CProvider p = ctx.provider("linuxfs-i2c");
 		final Console console = new Console();
@@ -53,6 +63,7 @@ public class Application {
         console.println("  Dev I2C detail    " + sensor.i2cDetail());
         console.println("  Setup ----------------------------------------------------------");
         
+        log.info("Start reading sensor data");
         while(true) {
             double temp = sensor.temperatureC();
             double pres = sensor.pressurePa();
