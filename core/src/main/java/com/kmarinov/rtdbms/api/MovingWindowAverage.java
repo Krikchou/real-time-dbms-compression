@@ -73,8 +73,8 @@ public class MovingWindowAverage implements Filter {
 				temp.put("W" + me.getKey().substring(0, 2), stats.get(PREFIX + me.getKey()));
 			}
 			
-			curr.addAll(temp);
 		}
+		curr.addAll(temp);
 		
 	}
 
