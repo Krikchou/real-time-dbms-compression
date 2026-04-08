@@ -26,5 +26,9 @@ public class ByteStaticRecord {
 	public Object find(String key) {
 		return record.get(key);
 	}
+	
+	public void addAll(Map<String, Object> fileds) {
+		record.putAll(fileds);
+	}
 
 }

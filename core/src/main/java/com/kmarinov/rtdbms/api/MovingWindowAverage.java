@@ -15,6 +15,7 @@ public class MovingWindowAverage implements Filter {
 
 	@Override
 	public void doFilter(ByteStaticRecord curr, ByteStaticRecord last, Map<String, Object> stats, int lines) {
+		Map<String, Object> temp = new HashMap<>();
 		for (Entry<String, Object> me : curr.getValues().entrySet()) {
 			if (me.getKey()!= "CLK" && me.getValue() instanceof Number currVal) {
 				switch (currVal) {
@@ -69,8 +70,10 @@ public class MovingWindowAverage implements Filter {
 				default -> throw new IllegalArgumentException("Unexpected value: " + currVal);
 				};
 				
-				curr.add("W" + me.getKey().substring(0, 2), stats.get(PREFIX + me.getKey()));
+				temp.put("W" + me.getKey().substring(0, 2), stats.get(PREFIX + me.getKey()));
 			}
+			
+			curr.addAll(temp);
 		}
 		
 	}

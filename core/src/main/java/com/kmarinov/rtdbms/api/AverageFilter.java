@@ -1,5 +1,6 @@
 package com.kmarinov.rtdbms.api;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -11,6 +12,7 @@ public class AverageFilter implements Filter {
 
 	@Override
 	public void doFilter(ByteStaticRecord curr, ByteStaticRecord last, Map<String, Object> statistics, int lines) {
+		Map<String, Object> temp = new HashMap<>();
 		for (Entry<String, Object> me : curr.getValues().entrySet()) {
 			if (me.getKey()!= "CLK" && me.getValue() instanceof Number currVal) {
 				float result = switch (currVal) {
@@ -21,8 +23,10 @@ public class AverageFilter implements Filter {
 				};
 				
 				statistics.put(PREFX + me.getKey(), result);
-				curr.add("A" + me.getKey().substring(0, 2), result);
+				temp.put("A" + me.getKey().substring(0, 2), result);
 			}
 		}
+		
+		curr.addAll(temp);
 	}
 }
