@@ -45,7 +45,7 @@ public class Application {
 		final Context ctx = Pi4J.newAutoContext();
 		final Console console = new Console();
 		
-		BMP280DeviceI2C sensor = new BMP280DeviceI2C(ctx, console, 1, 0x76, log);
+		BMP280DeviceI2C sensor = new BMP280DeviceI2C(ctx, console, 1, 0x77, log);
 		
         sensor.resetSensor();
         sensor.initSensor();
