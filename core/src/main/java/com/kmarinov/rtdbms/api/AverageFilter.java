@@ -21,6 +21,7 @@ public class AverageFilter implements Filter {
 				};
 				
 				statistics.put(PREFX + me.getKey(), result);
+				curr.add("A" + me.getKey().substring(0, 2), result);
 			}
 		}
 	}
