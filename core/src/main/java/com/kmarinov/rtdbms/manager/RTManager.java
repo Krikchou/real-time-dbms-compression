@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kmarinov.rtdbms.api.Filter;
 import com.kmarinov.rtdbms.model.ByteStaticRecord;
 import com.kmarinov.rtdbms.model.CompressionTypeEnum;
@@ -18,6 +21,8 @@ import com.kmarinov.rtdbms.model.DataType;
 import com.kmarinov.rtdbms.model.DatabaseDefinition;
 
 public class RTManager implements Closeable {
+	private static final Logger LOG = LoggerFactory.getLogger(RTManager.class);
+	
 	public static final String DAF_COM_N = "/datafile";
 	public static final String DEF_COM_N = "/definition";
 	public static final String LOG_COM_N = "/log";
@@ -200,10 +205,12 @@ public class RTManager implements Closeable {
 	}
 	
 	public void store(ByteStaticRecord r) throws IOException {
+		long start = System.nanoTime();
 		r.add("CLK", data_lines + 1);
 		byte[] compressed = compressor.doCompress(r, def);
 		D_DATA_FILE.seek(compare_data_cursor);
 		D_DATA_FILE.write(compressed);
+		LOG.info("Write Uncompressed Took : {0}ns", System.nanoTime() - start);
 		compare_data_cursor += compressed.length;
 		if (uncompressedLastBytes.length != 0) {
 			
@@ -228,8 +235,8 @@ public class RTManager implements Closeable {
 		STAT_FILE.writeInt(data_lines);
 		STAT_FILE.seek(Integer.BYTES);
 		STAT_FILE.writeInt(data_cursor);
+		LOG.info("Write Compressed Took : {0}ns", System.nanoTime() - start);
 		
-		System.out.println(stats);
 	}
 
 
