@@ -97,6 +97,7 @@ public class BMP280DeviceI2C extends BMP280Device {
        this.config = i2cDeviceConfig;
        this.i2c = this.pi4j.create(i2cDeviceConfig);
        this.logger.info("Exit:createI2cDevice  ");
+       i2c.writeRegister(BMP280Declares.chipId, 0x58);
    }
 
 
