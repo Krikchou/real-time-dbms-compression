@@ -1,4 +1,8 @@
 Manifest-Version: 1.0
-Build-Jdk-Spec: 25
+Built-By: krama
+Build-Jdk: 25.0.2
+Class-Path: pi4j-core-3.0.3.jar pi4j-plugin-raspberrypi-3.0.3.jar core-0
+ .0.1-SNAPSHOT.jar slf4j-api-2.0.16.jar slf4j-simple-2.0.16.jar
+Main-Class: com.kmarinov.rtdbms.pi.Application
 Created-By: Maven Integration for Eclipse
 
