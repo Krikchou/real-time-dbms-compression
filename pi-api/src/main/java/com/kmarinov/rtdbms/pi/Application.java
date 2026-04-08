@@ -26,7 +26,7 @@ public class Application {
 	
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
 	
-	public static void main(String... args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		rt_manager = RTManager.getInstance(root_dir, new Compressor());
 		rt_manager.addFilter(new AverageFilter());
 		rt_manager.addFilter(new MovingWindowAverage());
