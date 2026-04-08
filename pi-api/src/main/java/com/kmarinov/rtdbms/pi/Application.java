@@ -39,7 +39,7 @@ public class Application {
 		rt_manager = RTManager.getInstance(root_dir, new Compressor());
 		rt_manager.addFilter(new AverageFilter());
 		rt_manager.addFilter(new MovingWindowAverage());
-		if(rt_manager.isNotEmptyFile()) {
+		if(!rt_manager.isNotEmptyFile()) {
 			log.info("Init Database structure");
 			rt_manager.addCol("CLK", DataType.NUM, CompressionTypeEnum.NONE);
 			rt_manager.addCol("TMP", DataType.FPN, CompressionTypeEnum.DIFF);
