@@ -9,8 +9,13 @@ public class OffsetByRemapper implements Remapper<Float, Float> {
 	}
 	
 	@Override
-	public Float doRemap(Float from) {
-		return from - offsetFrom;
+	public Number doRemap(Number from) {
+		return (Float) from - offsetFrom;
+	}
+
+	@Override
+	public Number restore(Number from) {
+		return (Float) from + offsetFrom;
 	}
 	
 

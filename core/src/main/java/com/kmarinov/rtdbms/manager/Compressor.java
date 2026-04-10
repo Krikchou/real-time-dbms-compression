@@ -24,6 +24,14 @@ public class Compressor {
 		return new Compressor();
 	};
 	
+	public void doRemap(ByteStaticRecord record, DatabaseDefinition def) {
+		for(int i=0;i<def.getColumns().length;i++) {
+			record.add(def.getColumns()[i], def.getRemapperFunctions()[i]
+					.doRemap((Number) record.find(def.getColumns()[i])));
+			
+		}
+	}
+	
 	public byte[] doCompress(ByteStaticRecord record, DatabaseDefinition def) {
 		return from(record, def);
 	}

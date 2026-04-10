@@ -47,15 +47,15 @@ public class Application {
 		rt_manager.addFilter(new MovingWindowAverage());
 		if(!rt_manager.isNotEmptyFile()) {
 			log.info("Init Database structure");
-			rt_manager.addCol("CLK", DataType.NUM, CompressionTypeEnum.NONE);
-			rt_manager.addCol("TMP", DataType.FPN, CompressionTypeEnum.DIFF);
-			rt_manager.addCol("PRS", DataType.FPN, CompressionTypeEnum.DIFF);
+			rt_manager.addCol("CLK", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			rt_manager.addCol("TMP", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
+			rt_manager.addCol("PRS", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
 			// sliding window averages
-			rt_manager.addCol("WTM", DataType.FPN, CompressionTypeEnum.DIFF);
-			rt_manager.addCol("WPR", DataType.FPN, CompressionTypeEnum.DIFF);
+			rt_manager.addCol("WTM", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
+			rt_manager.addCol("WPR", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
 			//plain averages
-			rt_manager.addCol("ATM", DataType.FPN, CompressionTypeEnum.DIFF);
-			rt_manager.addCol("APR", DataType.FPN, CompressionTypeEnum.DIFF);
+			rt_manager.addCol("ATM", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
+			rt_manager.addCol("APR", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
 		}
 		
 		log.info("Init sensors");
@@ -72,6 +72,7 @@ public class Application {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
+				log.info("Execution interrupted. Start end sequence.");
 				try {
 					rt_manager.close();
 					Decryptor.instance(root_dir).validate();

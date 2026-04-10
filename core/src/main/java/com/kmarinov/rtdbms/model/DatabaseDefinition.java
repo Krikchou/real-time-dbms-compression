@@ -5,6 +5,8 @@ public class DatabaseDefinition {
 	private String[] columns;
 	private DataType[] datatypes;
 	private CompressionTypeEnum[] compressionStrategies;
+	private Remapper<?, ?>[] remapperFunctions;
+	private Float[] remapperVals;
 	private int recordSize;
 
 	public String[] getColumns() {
@@ -44,6 +46,14 @@ public class DatabaseDefinition {
 		return this.recordSize;
 	}
 
+	public Remapper<?, ?>[] getRemapperFunctions() {
+		return remapperFunctions;
+	}
+
+	public void setRemapperFunctions(Remapper<?, ?>[] remapperFunctions) {
+		this.remapperFunctions = remapperFunctions;
+	}
+
 	private void calcMaxRecordSize() {
 		int sum = 0;
 		for (DataType dt : datatypes) {
@@ -60,9 +70,23 @@ public class DatabaseDefinition {
 			case STR:
 				sum += 5*Character.BYTES;
 				break;
+			case BDC:
+				//unused
+				sum += 99;
+				break;
+			default:
+				break;
 			}
 		}
 		
 		this.recordSize = sum;
+	}
+
+	public Float[] getRemapperVals() {
+		return remapperVals;
+	}
+
+	public void setRemapperVals(Float[] remapperVals) {
+		this.remapperVals = remapperVals;
 	}
 }

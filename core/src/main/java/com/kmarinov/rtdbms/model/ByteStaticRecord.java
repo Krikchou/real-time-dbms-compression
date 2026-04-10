@@ -2,6 +2,7 @@ package com.kmarinov.rtdbms.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class ByteStaticRecord {
 	private Map<String, Object> record;
@@ -29,6 +30,30 @@ public class ByteStaticRecord {
 	
 	public void addAll(Map<String, Object> fileds) {
 		record.putAll(fileds);
+	}
+	
+	public String dumpCSVLine(String[] dumpOrder) {
+		StringBuilder sb = new StringBuilder();
+		for (String s : dumpOrder) {
+			sb.append(record.get(s).toString());
+			sb.append(";");
+		}
+		
+		return sb.toString();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		boolean isEqual = true;
+		if(other != null && other instanceof ByteStaticRecord otherRecord) {
+			for (Entry<String, Object> e : this.record.entrySet()) {
+				isEqual = isEqual && e.getValue().equals(otherRecord.find(e.getKey()));
+			}
+			
+			return isEqual;
+		}
+		
+		return false;
 	}
 
 }

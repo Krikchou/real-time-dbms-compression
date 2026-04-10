@@ -9,9 +9,14 @@ public class StepRemapper implements Remapper<Integer, Float>{
 	}
 
 	@Override
-	public Integer doRemap(Float from) {
+	public Number doRemap(Number from) {
 		
-		return (int) Math.ceil(from/step);
+		return (int) Math.ceil((Float) from/step);
+	}
+
+	@Override
+	public Float restore(Number number) {
+		return ((Integer) number * step);
 	}
 
 }

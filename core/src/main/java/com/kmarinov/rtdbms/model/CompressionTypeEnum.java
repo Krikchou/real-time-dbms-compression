@@ -3,7 +3,9 @@ package com.kmarinov.rtdbms.model;
 public enum CompressionTypeEnum {
 	NONE(0),
 	DIFF(1),
-	ENM(2);
+	ENM(2),
+	STEP(3),
+	OFFST(4);
 	
 	public int type;
 	

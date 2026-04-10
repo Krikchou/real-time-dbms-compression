@@ -18,5 +18,12 @@ public class DynamicEnumRemapper implements Remapper<Integer, Number> {
 		}
 		
 		return newMapping;
-	} 
+	}
+
+	@Override
+	public Number restore(Number number) {
+		return enm.entrySet().stream().filter(e -> e.getValue().equals(number)).findFirst().get().getKey();
+	}
+	
+	
 }
