@@ -91,7 +91,7 @@ public class RTManager implements Closeable {
 		int compressionVarsSegment = ByteBuffer.wrap(buff, 12, 4).getInt();
 		LOG.info("Compression variables segment size is {}", compressionSegmentSize);
 		
-		cursor += 3*Integer.BYTES;
+		cursor += 4*Integer.BYTES;
 		
 		buff = new byte[3*Character.BYTES*columnSegmentSize];
 		
@@ -199,10 +199,10 @@ public class RTManager implements Closeable {
 		cursor += Integer.BYTES;
 		DEF_FILE.seek(cursor);
 		DEF_FILE.writeInt(def.getSizes()[3] + 1);
+		cursor += Integer.BYTES;
 		
 		def.setSizes(new int[] {def.getSizes()[0] + 1, def.getSizes()[1] + 1, def.getSizes()[2] + 1, def.getSizes()[3] + 1});
 		
-		cursor += Integer.BYTES;
 		DEF_FILE.seek(cursor);
 		
 		for (String cn : def.getColumns()) {

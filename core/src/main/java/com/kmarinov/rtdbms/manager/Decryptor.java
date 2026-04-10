@@ -56,7 +56,7 @@ public class Decryptor {
 		int compressionVarsSegment = ByteBuffer.wrap(buff, 12, 4).getInt();
 		LOG.info("Compression variables segment size is {}", compressionSegmentSize);
 		
-		cursor += 3*Integer.BYTES;
+		cursor += 4*Integer.BYTES;
 		
 		buff = new byte[3*Character.BYTES*columnSegmentSize];
 		

@@ -39,6 +39,8 @@ public class ByteStaticRecord {
 			sb.append(";");
 		}
 		
+		sb.append("\r\n");
+		
 		return sb.toString();
 	}
 	
