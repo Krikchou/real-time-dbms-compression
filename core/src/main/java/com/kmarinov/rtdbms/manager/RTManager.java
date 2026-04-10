@@ -88,7 +88,7 @@ public class RTManager implements Closeable {
 		LOG.info("Datatype segment size is {}", datatypeSegmentSize);
 		int compressionSegmentSize = ByteBuffer.wrap(buff, 8, 4).getInt();
 		LOG.info("Compression segment size is {}", compressionSegmentSize);
-		int compressionVarsSegment = ByteBuffer.wrap(buff, 12, 5).getInt();
+		int compressionVarsSegment = ByteBuffer.wrap(buff, 12, 4).getInt();
 		LOG.info("Compression variables segment size is {}", compressionSegmentSize);
 		
 		cursor += 3*Integer.BYTES;
