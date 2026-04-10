@@ -32,7 +32,7 @@ public class Decryptor {
 		DATA_FILE = new RandomAccessFile(rootDir + RTManager.DAF_COM_N, "rw");
 		D_DATA_FILE = new RandomAccessFile(rootDir + RTManager.CMP_COM_N, "rw");
 		DEF_FILE = new RandomAccessFile(rootDir + RTManager.DEF_COM_N, "rw");
-		DUMP_FILE = new RandomAccessFile(rootDir + "datadump.txt","rw");
+		DUMP_FILE = new RandomAccessFile(rootDir + "/datadump.txt","rw");
 		
 		this.readDefinitionFile();
 	}
@@ -229,6 +229,8 @@ public class Decryptor {
 			default:
 				break;
 			};
+			
+			offset += len;
 		}
 		
 		return record;
