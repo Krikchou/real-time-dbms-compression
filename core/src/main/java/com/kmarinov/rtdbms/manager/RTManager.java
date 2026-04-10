@@ -29,6 +29,7 @@ public class RTManager implements Closeable {
 	public static final String LOG_COM_N = "/log";
 	public static final String STF_COM_N = "/stat";
 	public static final String CMP_COM_N = "/def_datafile";
+	public static final String HCF_COM_N = "/huff_buff_file";
 	
 	
 	private static RandomAccessFile DATA_FILE;
@@ -37,6 +38,7 @@ public class RTManager implements Closeable {
 	private static RandomAccessFile LOG_FILE;
 	private static RandomAccessFile STAT_FILE;
 	private final Compressor compressor;
+	private final int dataLineCutoff;
 	private DatabaseDefinition def;
 	private int data_lines;
 	private int data_cursor;
@@ -46,10 +48,12 @@ public class RTManager implements Closeable {
 	private Map<String, Object> stats = new ConcurrentHashMap<>();
 	private byte[] uncompressedLastBytes = new byte[0];
 	private boolean isNotEmptyFile = false;
+	private boolean isWritingToBuffer = false;
 	
 	
-	private RTManager(String rootDir, Compressor compressor) throws IOException {
+	private RTManager(String rootDir, Compressor compressor, int datalineCutoff) throws IOException {
 		this.compressor = compressor;
+		this.dataLineCutoff = datalineCutoff;
 		//step load files:
 		DATA_FILE = new RandomAccessFile(rootDir + DAF_COM_N, "rw");
 		D_DATA_FILE = new RandomAccessFile(rootDir + CMP_COM_N, "rw");
@@ -64,8 +68,8 @@ public class RTManager implements Closeable {
 	}
 	
 	
-	public static RTManager getInstance(String rootDir, Compressor compressor) throws IOException {
-		return new RTManager(rootDir, compressor);
+	public static RTManager getInstance(String rootDir, Compressor compressor, int datalineCutoff) throws IOException {
+		return new RTManager(rootDir, compressor, datalineCutoff);
 	}
 	
 	private void readDefinitionFile() throws IOException {
@@ -75,11 +79,11 @@ public class RTManager implements Closeable {
 		DEF_FILE.read(buff);
 		
 		int columnSegmentSize = ByteBuffer.wrap(buff, 0, 4).getInt();
-		System.out.println(columnSegmentSize);
+		LOG.info("Column segment size is {}", columnSegmentSize);
 		int datatypeSegmentSize = ByteBuffer.wrap(buff, 4, 4).getInt();
-		System.out.println(datatypeSegmentSize);
+		LOG.info("Datatype segment size is {}", datatypeSegmentSize);
 		int compressionSegmentSize = ByteBuffer.wrap(buff, 8, 4).getInt();
-		System.out.println(compressionSegmentSize);
+		LOG.info("Compression segment size is {}", compressionSegmentSize);
 		
 		cursor += 3*Integer.BYTES;
 		
@@ -256,8 +260,12 @@ public class RTManager implements Closeable {
 			LOG_FILE.writeFloat((float) e.getValue());
 			curr += Float.BYTES;
 		}
-		System.out.println("New struct file size:" + DATA_FILE.length());
-		System.out.println("Old struct file size:" + D_DATA_FILE.length());
+		LOG.info("New struct file size:" + DATA_FILE.length());
+		LOG.info("Old struct file size:" + D_DATA_FILE.length());
+	}
+	
+	public void encryptSingleRowSilent() {
+		// do nothing for now;
 	}
 
 
@@ -267,6 +275,16 @@ public class RTManager implements Closeable {
 	
 	public void addFilter(Filter f) {
 		filterChain.add(f);
+	}
+
+
+	public boolean isWritingToBuffer() {
+		return isWritingToBuffer;
+	}
+
+
+	public void setWritingToBuffer(boolean isWritingToBuffer) {
+		this.isWritingToBuffer = isWritingToBuffer;
 	}
 	
 	

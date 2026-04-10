@@ -1,6 +1,7 @@
 package com.kmarinov.rtdbms.pi;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.kmarinov.rtdbms.api.AverageFilter;
 import com.kmarinov.rtdbms.api.MovingWindowAverage;
 import com.kmarinov.rtdbms.manager.Compressor;
+import com.kmarinov.rtdbms.manager.Decryptor;
 import com.kmarinov.rtdbms.manager.RTManager;
 import com.kmarinov.rtdbms.model.ByteStaticRecord;
 import com.kmarinov.rtdbms.model.CompressionTypeEnum;
@@ -27,6 +29,10 @@ public class Application {
 	
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
 	
+	private static final long DELTA = 1000;
+	
+	private static final long NS_IN_MS = 1000000;
+	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		log.info("  _______ _                   _____           _             _____  ____  __  __  _____ \r\n"
 				+ " |__   __(_)                 / ____|         (_)           |  __ \\|  _ \\|  \\/  |/ ____|\r\n"
@@ -36,7 +42,7 @@ public class Application {
 				+ "    |_|  |_|_| |_| |_|\\___| |_____/ \\___|_|  |_|\\___||___/ |_____/|____/|_|  |_|_____/ \r\n"
 				+ "                                                                                       \r\n"
 				+ "                                                                                       ");
-		rt_manager = RTManager.getInstance(root_dir, new Compressor());
+		rt_manager = RTManager.getInstance(root_dir, new Compressor(), 1000);
 		rt_manager.addFilter(new AverageFilter());
 		rt_manager.addFilter(new MovingWindowAverage());
 		if(!rt_manager.isNotEmptyFile()) {
@@ -63,8 +69,22 @@ public class Application {
         console.println("  Dev I2C detail    " + sensor.i2cDetail());
         console.println("  Setup ----------------------------------------------------------");
         
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					rt_manager.close();
+					Decryptor.instance(root_dir).validate();
+				} catch (IOException e) {
+					log.error("Could not close manager", e);
+				}
+				
+			}
+        }));
+        
         log.info("Start reading sensor data");
         while(true) {
+        	long startTime = System.nanoTime();
             double temp = sensor.temperatureC();
             double pres = sensor.pressurePa();
             
@@ -72,7 +92,18 @@ public class Application {
             		.add("TMP", (float) temp)
             		.add("PRS", (float) pres));
             
-            Thread.sleep(1000);
+            long endTime = System.nanoTime();
+            
+            if (rt_manager.isWritingToBuffer()) {
+               long timeElapsed = System.nanoTime() - startTime;
+               while (timeElapsed < DELTA * NS_IN_MS * 0.9) {
+            	   startTime = System.nanoTime();
+            	   rt_manager.encryptSingleRowSilent();
+            	   timeElapsed += System.nanoTime() - startTime;
+               } 
+            } else {
+               Thread.sleep(Duration.ofNanos((DELTA * NS_IN_MS) - (endTime - startTime)));
+            }
         }
 		
 	}

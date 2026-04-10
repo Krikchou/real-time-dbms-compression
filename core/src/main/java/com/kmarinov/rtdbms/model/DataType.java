@@ -4,7 +4,8 @@ public enum DataType {
 	STR(0),
 	NUM(1),
 	FPN(2),
-	FLG(3);
+	FLG(3),
+	BDC(4);
 	
 	public int type;
 	

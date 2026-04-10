@@ -26,6 +26,10 @@ public class Decryptor {
 		this.readDefinitionFile();
 	}
 	
+	public static Decryptor instance(String root) throws IOException {
+		return new Decryptor(root);
+	}
+	
 	private void readDefinitionFile() throws IOException {
 		int cursor = 0;
 		byte[] buff = new byte[3*Integer.BYTES];
