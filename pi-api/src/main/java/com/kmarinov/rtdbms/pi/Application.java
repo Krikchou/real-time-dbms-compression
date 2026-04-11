@@ -2,12 +2,15 @@ package com.kmarinov.rtdbms.pi;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kmarinov.rtdbms.api.AverageFilter;
+import com.kmarinov.rtdbms.api.FloatToIntConversionFilter;
 import com.kmarinov.rtdbms.api.MovingWindowAverage;
+import com.kmarinov.rtdbms.api.WeightedAverageFilter;
 import com.kmarinov.rtdbms.manager.Compressor;
 import com.kmarinov.rtdbms.manager.Decryptor;
 import com.kmarinov.rtdbms.manager.RTManager;
@@ -45,17 +48,25 @@ public class Application {
 		rt_manager = RTManager.getInstance(root_dir, new Compressor(), 1000);
 		rt_manager.addFilter(new AverageFilter());
 		rt_manager.addFilter(new MovingWindowAverage());
+		rt_manager.addFilter(new WeightedAverageFilter(0.05f));
+		// should be executed last
+		rt_manager.addFilter(new FloatToIntConversionFilter(List.of("*"), 4));
 		if(!rt_manager.isNotEmptyFile()) {
 			log.info("Init Database structure");
+			//clock
 			rt_manager.addCol("CLK", DataType.NUM, CompressionTypeEnum.NONE, 0f);
-			rt_manager.addCol("TMP", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
-			rt_manager.addCol("PRS", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
+			//readings
+			rt_manager.addCol("TMP", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			rt_manager.addCol("PRS", DataType.NUM, CompressionTypeEnum.NONE, 0f);
 			// sliding window averages
-			rt_manager.addCol("WTM", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
-			rt_manager.addCol("WPR", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
+			rt_manager.addCol("WTM", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			rt_manager.addCol("WPR", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			// weighted sum
+			rt_manager.addCol("QTM", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			rt_manager.addCol("QPR", DataType.NUM, CompressionTypeEnum.NONE, 0f);
 			//plain averages
-			rt_manager.addCol("ATM", DataType.FPN, CompressionTypeEnum.DIFF, 20f);
-			rt_manager.addCol("APR", DataType.FPN, CompressionTypeEnum.DIFF, 80f);
+			rt_manager.addCol("ATM", DataType.NUM, CompressionTypeEnum.NONE, 0f);
+			rt_manager.addCol("APR", DataType.NUM, CompressionTypeEnum.NONE, 0f);
 		}
 		
 		log.info("Init sensors");

@@ -21,10 +21,13 @@ public class MovingWindowAverage implements Filter {
 				switch (currVal) {
 				case Integer i -> {
 					if (cache.containsKey(PREFIX + me.getKey())) {
+						// get previous sum
 						Float stat = (Float) stats.getOrDefault(PREFIX + me.getKey(), 0f);
+						// get first in queue
 						Integer out = (Integer) cache.get(me.getKey()).poll();
 						cache.get(me.getKey()).offer(i);
-						stats.put(PREFIX + me.getKey(), ((WIN_LEN) * stat - (out.floatValue() / (float) WIN_LEN) + (i.floatValue() / (float) WIN_LEN))); 
+						// f(x[n]) = f(x[n-1]) + (x[n] - x[n-1])/n
+						stats.put(PREFIX + me.getKey(), stat + ((i.floatValue() - out.floatValue())/WIN_LEN)); 
 					} else {
 						Queue<Integer> q = new SynchronousQueue<Integer>();
 						for (int j = 0;j<WIN_LEN-1;j++) {
