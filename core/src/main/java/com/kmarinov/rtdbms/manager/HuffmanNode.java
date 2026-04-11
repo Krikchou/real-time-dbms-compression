@@ -24,6 +24,10 @@ class HuffmanNode implements PrintableNode {
 	public void setCode(String code) {
 		this.code = code;
 	}
+	
+	public boolean isLeaf() {
+		return left == null && right == null;
+	}
 
 	@Override
 	public PrintableNode getLeft() {
@@ -42,5 +46,13 @@ class HuffmanNode implements PrintableNode {
 		} else {
 			return "0|1";
 		}
+	}
+
+	public Byte getData() {
+		return data;
+	}
+
+	public void setData(Byte data) {
+		this.data = data;
 	}
 }

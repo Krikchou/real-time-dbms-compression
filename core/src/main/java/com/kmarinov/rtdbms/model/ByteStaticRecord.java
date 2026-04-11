@@ -45,6 +45,11 @@ public class ByteStaticRecord {
 	}
 	
 	@Override
+	public String toString() {
+		return record.toString();
+	}
+	
+	@Override
 	public boolean equals(Object other) {
 		boolean isEqual = true;
 		if(other != null && other instanceof ByteStaticRecord otherRecord) {

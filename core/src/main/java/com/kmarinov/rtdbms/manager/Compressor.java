@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -116,7 +117,7 @@ public class Compressor {
 		}
 	}
 
-	public HuffmanNode constructHTree(Map<Byte, Integer> frequencyMap) {
+	public HuffmanStats constructHTree(Map<Byte, Integer> frequencyMap) {
 		PriorityQueue<HuffmanNode> priorityQueue =
 			       new PriorityQueue<>((a, b) -> a.frequency - b.frequency);
 
@@ -143,28 +144,30 @@ public class Compressor {
 
 			     // The remaining node is the root of the Huffman Tree
 			     HuffmanNode root = priorityQueue.poll();
-			     this.assignCodes(root, new StringBuilder());
-			     return root;
+			     Map<Byte, String> map = new HashMap<>();
+			     this.assignCodes(root, new StringBuilder(), map);
+			     return new HuffmanStats(root, map, frequencyMap);
 	}
 	
-	private void assignCodes(HuffmanNode root, StringBuilder code) {
+	private void assignCodes(HuffmanNode root, StringBuilder code, Map<Byte, String> stats) {
 	     if (root == null) return;
 
 	     // If this is a leaf node, print the character and its code
 	     if (root.data != null) {
 	    	 root.setCode(code.toString());
+	    	 stats.put(root.data, code.toString());
 	         LOG.info(String.format("%8s", Integer.toBinaryString(root.data & 0xFF)).replace(' ', '0') + ": " + code);
 	     }
 	     
 	     // Traverse the left subtree
 	     if (root.left != null) {
-	         assignCodes(root.left, code.append('0'));
+	         assignCodes(root.left, code.append('0'), stats);
 	         code.deleteCharAt(code.length() - 1);
 	     }
 	     
 	     // Traverse the right subtree
 	     if (root.right != null) {
-	         assignCodes(root.right, code.append('1'));
+	         assignCodes(root.right, code.append('1'), stats);
 	         code.deleteCharAt(code.length() - 1);
 	     }
 	}

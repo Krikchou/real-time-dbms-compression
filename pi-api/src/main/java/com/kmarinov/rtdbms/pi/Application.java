@@ -101,9 +101,18 @@ public class Application {
             	   startTime = System.nanoTime();
             	   rt_manager.encryptSingleRowSilent();
             	   timeElapsed += System.nanoTime() - startTime;
+            	   if (rt_manager.isBufferingData()) {
+            		   Thread.sleep(Duration.ofNanos((DELTA * NS_IN_MS) - (timeElapsed)));
+            		   break;
+            	   }
                } 
             } else {
-               Thread.sleep(Duration.ofNanos((DELTA * NS_IN_MS) - (endTime - startTime)));
+            	if (rt_manager.isBufferingData()) {
+            	   rt_manager.resetHuffExecution();
+            	   Thread.sleep(Duration.ofNanos((DELTA * NS_IN_MS) - (System.nanoTime() - startTime)));
+               } else {
+                   Thread.sleep(Duration.ofNanos((DELTA * NS_IN_MS) - (endTime - startTime)));
+               }
             }
         }
 		
