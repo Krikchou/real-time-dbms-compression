@@ -24,7 +24,7 @@ public class FloatToIntConversionFilter implements Filter {
 			if (me.getKey() != "CLK" && me.getValue() instanceof Float fval) {
 				if ((toFilter.get(0).equalsIgnoreCase("*") || toFilter.contains(me.getKey()))) {
 					// can be done with bit shift operations to be faster, this is only for readability
-					buff.put(me.getKey(),(int) (fval * (10^precision)));
+					buff.put(me.getKey(),(int) (fval * (Math.pow(10, precision))));
 				}
 
 			}
