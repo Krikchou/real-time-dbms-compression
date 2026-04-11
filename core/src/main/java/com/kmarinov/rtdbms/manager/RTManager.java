@@ -445,7 +445,7 @@ public class RTManager implements Closeable {
 	public void resetHuffExecution() throws IOException {
 		long ptr = HMAP_FILE.length();
 		HMAP_FILE.seek(ptr);
-		HMAP_FILE.writeInt((huffTree.getFrequencies().entrySet().size() * (Byte.BYTES + Integer.BYTES)) + Integer.BYTES);
+		HMAP_FILE.writeInt((huffTree.getFrequencies().entrySet().size() * (Byte.BYTES + Integer.BYTES)));
 		ptr += Integer.BYTES;
 		HMAP_FILE.seek(ptr);
 		HMAP_FILE.writeInt(huff_curr);

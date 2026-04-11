@@ -277,13 +277,13 @@ public class Decryptor {
 			int frequencyMapSize = HMAP_FILE.readInt();
 			rec_curr += Integer.BYTES;
 			HMAP_FILE.seek(rec_curr);
-			int mappings = HMAP_FILE.readInt();
+			long mappings = HMAP_FILE.readInt() + hfile_curr;
 			rec_curr += Integer.BYTES;
 			HMAP_FILE.seek(rec_curr);
 
 			Map<Byte, Integer> huffMap = new HashMap<>();
 			int mapIdx = 0;
-			while (mapIdx < frequencyMapSize - Integer.BYTES) {
+			while (mapIdx < frequencyMapSize) {
 				byte toEncode = HMAP_FILE.readByte();
 				rec_curr += Byte.BYTES;
 				mapIdx += Byte.BYTES;
